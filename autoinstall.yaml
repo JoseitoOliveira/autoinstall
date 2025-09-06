@@ -1,0 +1,92 @@
+# Autoinstall for Ubuntu 24.04 (Server ISO -> minimal GUI)
+
+version: 1
+identity:
+  hostname: ubuntu-dev
+  username: dev
+  password: "$6$rounds=4096$EXAMPLE...$HASH"   # mkpasswd --method=SHA-512
+
+ssh:
+  install-server: true
+  allow-pw: true
+  ssh_pwauth: true
+
+locale: en_US.UTF-8
+keyboard:
+  layout: br
+  variant: abnt2
+timezone: America/Sao_Paulo
+
+storage:
+  layout:
+    name: direct
+  config:
+    - id: disk0
+      type: disk
+      match:
+        size: largest
+      wipe: superblock
+      ptable: gpt
+    - id: esp0
+      type: partition
+      device: disk0
+      size: 536870912   # 512 MiB
+      flag: boot
+      wipe: superblock
+    - id: root0
+      type: partition
+      device: disk0
+      size: -1
+      wipe: superblock
+    - id: fs_esp
+      type: format
+      fstype: fat32
+      volume: esp0
+    - id: fs_root
+      type: format
+      fstype: ext4
+      volume: root0
+    - type: mount
+      device: fs_esp
+      path: /boot/efi
+    - type: mount
+      device: fs_root
+      path: /
+
+packages:
+  - build-essential
+  - git
+  - curl
+  - wget
+  - unzip
+  - openjdk-17-jdk
+  - cmake
+  - ninja-build
+  - gdb
+  - gnome-session
+  - gdm3
+  - xterm
+  - openssh-server
+  - nano
+
+late-commands:
+  # SSH configuration: enable password login and custom port 2222
+  - curtin in-target -- sed -i 's/^#PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+  - curtin in-target -- sed -i 's/^#Port 22/Port 2222/' /etc/ssh/sshd_config
+  - curtin in-target -- systemctl enable ssh
+  - curtin in-target -- systemctl restart ssh
+
+user-data:
+  disable_root: true
+
+updates: security
+debconf-selections: |
+  gdm3 shared/default-x-display-manager select gdm3
+
+reporting:
+  hook:
+    type: print
+  builtin:
+    type: print
+
+shutdown: reboot
