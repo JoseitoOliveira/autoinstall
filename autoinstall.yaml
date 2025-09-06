@@ -2,9 +2,9 @@
 
 version: 1
 identity:
-  hostname: ubuntu-dev
-  username: dev
-  password: "$6$rounds=4096$EXAMPLE...$HASH"   # mkpasswd --method=SHA-512
+  hostname: ocm-fw
+  username: ocm
+  password: "$y$j9T$uhkxlm8nUQaNu.6rl4k2d.$DIldpYy96OHg8lFjfXfc671BZcGWkPOmaDONGAhGSg3"
 
 ssh:
   install-server: true
